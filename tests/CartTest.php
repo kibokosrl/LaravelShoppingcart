@@ -45,9 +45,9 @@ class CartTest extends TestCase
 
         $app['config']->set('database.default', 'testing');
         $app['config']->set('database.connections.testing', [
-            'driver'   => 'sqlite',
+            'driver' => 'sqlite',
             'database' => ':memory:',
-            'prefix'   => '',
+            'prefix' => '',
         ]);
     }
 
@@ -61,7 +61,7 @@ class CartTest extends TestCase
         parent::setUp();
 
         $this->app->afterResolving('migrator', function ($migrator) {
-            $migrator->path(realpath(__DIR__.'/../database/migrations'));
+            $migrator->path(realpath(__DIR__ . '/../database/migrations'));
         });
     }
 
@@ -85,7 +85,7 @@ class CartTest extends TestCase
         $this->assertItemsInCart(1, $cart->instance(Cart::DEFAULT_INSTANCE));
         $this->assertItemsInCart(1, $cart->instance('wishlist'));
     }
-    
+
     /** @test */
     public function it_can_add_an_item()
     {
@@ -913,7 +913,7 @@ class CartTest extends TestCase
 
         $user = Mockery::mock(Authenticatable::class);
 
-        event(new Logout($user));
+        event(new Logout(config('auth.guards'), $user));
     }
 
     /**
@@ -931,7 +931,7 @@ class CartTest extends TestCase
 
     /**
      * Set the config number format.
-     * 
+     *
      * @param int    $decimals
      * @param string $decimalPoint
      * @param string $thousandSeperator

@@ -202,6 +202,11 @@ class Cart
         $this->session->remove($this->instance);
     }
 
+    public function isEmpty()
+    {
+        return $this->getContent()->isEmpty();
+    }
+
     /**
      * Get the content of the cart.
      *
@@ -209,7 +214,11 @@ class Cart
      */
     public function content()
     {
-        return $this->getContent();
+        $content = $this->session->has($this->instance)
+        ? $this->session->get($this->instance)
+        : new Collection;
+
+        return $content;
     }
 
     /**
@@ -369,8 +378,9 @@ class Cart
      * @param mixed $identifier
      * @return void
      */
-    public function restore($identifier, $deleteRecord = true)
+    public function restore($identifier)
     {
+        $deleteRecord = config('cart.delete_record_after_restore', true);
         if (!$this->storedCartWithIdentifierExists($identifier)) {
             return;
         }
@@ -432,19 +442,11 @@ class Cart
      */
     protected function getContent()
     {
-        if (is_null($this->session->get($this->instance))) {
-            $this->events->dispatch('cart.info', ['name' => 'EmptyInstance', 'data' => $this->instance, 'hasSessionCartInstance' => $this->session->has($this->instance)]);
-            return new Collection([]);
+        if ($this->session->has($this->instance)) {
+            $this->session->get($this->instance);
+        } else {
+            return new Collection;
         }
-
-        return $this->session->get($this->instance);
-
-        /*$content = $this->session->has($this->instance)
-            ? $this->session->get($this->instance)
-            : new Collection;
-
-        return $content;
-        */
     }
 
     /**
