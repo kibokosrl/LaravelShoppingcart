@@ -443,7 +443,7 @@ class Cart
     protected function getContent()
     {
         if ($this->session->has($this->instance)) {
-            $this->session->get($this->instance);
+            return $this->session->get($this->instance);
         } else {
             return new Collection;
         }
