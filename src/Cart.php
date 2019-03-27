@@ -163,6 +163,10 @@ class Cart
      */
     public function remove($rowId)
     {
+        if (empty($rowId)) {
+            return;
+        }
+
         $cartItem = $this->get($rowId);
 
         $content = $this->getContent();
