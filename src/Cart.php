@@ -185,6 +185,7 @@ class Cart
         $content = $this->getContent();
 
         if (!$content->has($rowId)) {
+            $this->events->dispatch('cart.exception', ['name' => 'InvalidRowIDException', 'data' => $rowId]);
             throw new InvalidRowIDException("The cart does not contain rowId {$rowId}.");
         }
         return $content->get($rowId);
@@ -197,6 +198,7 @@ class Cart
      */
     public function destroy()
     {
+        $this->events->dispatch('cart.destroyed', $this->instance);
         $this->session->remove($this->instance);
     }
 
@@ -207,11 +209,7 @@ class Cart
      */
     public function content()
     {
-        if (is_null($this->session->get($this->instance))) {
-            return new Collection([]);
-        }
-
-        return $this->session->get($this->instance);
+        return $this->getContent();
     }
 
     /**
@@ -306,6 +304,7 @@ class Cart
     public function associate($rowId, $model)
     {
         if (is_string($model) && !class_exists($model)) {
+            $this->events->dispatch('cart.exception', ['name' => 'UnknownModelException', 'data' => $model]);
             throw new UnknownModelException("The supplied model {$model} does not exist.");
         }
 
@@ -351,6 +350,7 @@ class Cart
         $content = $this->getContent();
 
         if ($this->storedCartWithIdentifierExists($identifier)) {
+            $this->events->dispatch('cart.exception', ['name' => 'CartAlreadyStoredException', 'data' => $identifier]);
             throw new CartAlreadyStoredException("A cart with identifier {$identifier} was already stored.");
         }
 
@@ -369,7 +369,7 @@ class Cart
      * @param mixed $identifier
      * @return void
      */
-    public function restore($identifier, $deleteRecord=true)
+    public function restore($identifier, $deleteRecord = true)
     {
         if (!$this->storedCartWithIdentifierExists($identifier)) {
             return;
@@ -432,11 +432,19 @@ class Cart
      */
     protected function getContent()
     {
-        $content = $this->session->has($this->instance)
+        if (is_null($this->session->get($this->instance))) {
+            $this->events->dispatch('cart.info', ['name' => 'EmptyInstance', 'data' => $this->instance, 'hasSessionCartInstance' => $this->session->has($this->instance)]);
+            return new Collection([]);
+        }
+
+        return $this->session->get($this->instance);
+
+        /*$content = $this->session->has($this->instance)
             ? $this->session->get($this->instance)
             : new Collection;
 
         return $content;
+        */
     }
 
     /**
